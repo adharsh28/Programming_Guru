@@ -1,6 +1,7 @@
 import os
 
 import streamlit as st
+from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 
@@ -84,6 +85,9 @@ st.markdown(
 )
 
 
+load_dotenv()
+
+
 # ── Model ─────────────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
 def load_model():
@@ -102,46 +106,6 @@ if "messages" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []  # LangChain HumanMessage/AIMessage objects
 
-# ── Sidebar: chat history ─────────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown(
-        '<div class="sidebar-title">🕘 &nbsp;Chat History</div>', unsafe_allow_html=True
-    )
-
-    if not st.session_state.messages:
-        # Guard: only render when there are messages — avoids the None crash
-        st.markdown(
-            '<div class="empty-history">No messages yet.<br>Start a conversation!</div>',
-            unsafe_allow_html=True,
-        )
-    else:
-        # Show all messages, newest first
-        for msg in reversed(st.session_state.messages):
-            is_user = msg["role"] == "user"
-            icon = "👤" if is_user else " "
-            # Truncate long messages to 60 chars for sidebar preview
-            label = (
-                msg["content"][:60] + "…"
-                if len(msg["content"]) > 60
-                else msg["content"]
-            )
-            if is_user:
-                st.markdown(
-                    f"""
-                <div class="history-item">
-                <span class="history-icon">{icon}</span>
-                <span class="history-text">{label}</span>
-                </div>
-            """,
-                    unsafe_allow_html=True,
-                )
-
-    st.markdown("---")
-    # Clear button lives in sidebar — no need for a separate one in main area
-    if st.button("🗑 Clear conversation", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.chat_history = []
-        st.rerun()
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(
